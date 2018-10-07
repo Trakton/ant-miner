@@ -59,7 +59,7 @@ class AntMiner:
                 rule = self.build_rule(pheromone)
                 print(rule.terms)
                 print(rule.cases_covered)
-                print(rule.get_label())
+                print(rule.get_quality())
 
 
                 t = t + 1
