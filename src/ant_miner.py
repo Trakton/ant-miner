@@ -2,6 +2,7 @@ import pandas as pd
 from pheromone import Pheromone
 from rule import Rule
 from term import Term
+from probability import random_pick
 
 class AntMiner:
     def __init__(self, data, max_uncovered_cases, ant_count, rules_converg_count, min_cases):
@@ -13,11 +14,34 @@ class AntMiner:
         self.feature_count = self.data.shape[1]
         self.value_counts = data.apply(pd.Series.nunique)
 
+    def get_term_probabilities(self, rule, pheromone):
+        denominator = 0
+        for feature in range(self.feature_count):
+            for value in range(self.value_counts[feature]):
+                    term = Term(feature, value)
+                    if rule.can_add_term(term):
+                        denominator = denominator + pheromone.paths[feature][value]
+
+        probabilities = []
+        terms = []
+        for feature in range(self.feature_count):
+            for value in range(self.value_counts[feature]):
+                term = Term(feature, value)
+                if rule.can_add_term(term):
+                    probability = pheromone.trail(term) / denominator
+                    probabilities.append(probability)
+                    terms.append(term)
+
+        return probabilities, terms
+
     def build_rule(self, pheromone):
-        rule = Rule()
+        rule = Rule(self.data, self.min_cases)
 
-        rule.add(Term(3, 5))
-
+        probabilities, terms = self.get_term_probabilities(rule, pheromone)
+        while len(terms) > 0:
+            rule.add(random_pick(terms, probabilities))
+            probabilities, terms = self.get_term_probabilities(rule, pheromone)
+        
         return rule
 
     def fit(self):
@@ -34,6 +58,10 @@ class AntMiner:
             while t < self.ant_count and j < self.rules_converg_count:
                 rule = self.build_rule(pheromone)
                 print(rule.terms)
+                print(rule.cases_covered)
+                print(rule.get_label())
+
+
                 t = t + 1
 
             training_set_size = training_set_size - 1
