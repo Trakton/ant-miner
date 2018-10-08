@@ -57,8 +57,9 @@ class AntMiner:
 
             while t < self.ant_count and j < self.rules_converg_count:
                 rule = self.build_rule(pheromone)
+                rule.prune()
                 print(rule.terms)
-                print(rule.cases_covered)
+                print(rule.get_cases_covered())
                 print(rule.get_quality())
 
 
