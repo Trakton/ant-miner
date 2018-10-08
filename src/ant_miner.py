@@ -54,16 +54,18 @@ class AntMiner:
             t = 0
             j = 0
             pheromone = Pheromone(self.feature_count, self.value_counts)
-
+            previous_rule = Rule(self.data, self.min_cases)
             while t < self.ant_count and j < self.rules_converg_count:
                 rule = self.build_rule(pheromone)
                 rule.prune()
                 pheromone.update(rule)
-        
-                print(rule.get_quality())
-                print(pheromone.paths)
 
+                if rule.is_equal(previous_rule):
+                    j = j + 1
 
                 t = t + 1
+                print(t)
 
+            print(rule.get_quality())
+            print(rule.terms)
             training_set_size = training_set_size - 1
