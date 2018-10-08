@@ -65,7 +65,3 @@ class Rule:
                 break
             
             self.terms.pop(best_term)
-
-
-
-

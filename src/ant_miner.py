@@ -20,7 +20,7 @@ class AntMiner:
             for value in range(self.value_counts[feature]):
                     term = Term(feature, value)
                     if rule.can_add_term(term):
-                        denominator = denominator + pheromone.paths[feature][value]
+                        denominator = denominator + pheromone.trail(term)
 
         probabilities = []
         terms = []
@@ -58,9 +58,10 @@ class AntMiner:
             while t < self.ant_count and j < self.rules_converg_count:
                 rule = self.build_rule(pheromone)
                 rule.prune()
-                print(rule.terms)
-                print(rule.get_cases_covered())
+                pheromone.update(rule)
+        
                 print(rule.get_quality())
+                print(pheromone.paths)
 
 
                 t = t + 1

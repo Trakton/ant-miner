@@ -11,8 +11,8 @@ def main():
 
     data = Data(csv).dataset
 
-    ant_miner = AntMiner(data, 285, 1, 1, 1)
+    ant_miner = AntMiner(data, 10, 3000, 10, 10)
     ant_miner.fit()
-    
+
 if __name__ == '__main__':
     main()
