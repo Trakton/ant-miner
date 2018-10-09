@@ -65,6 +65,7 @@ class Rule:
                 break
             
             self.terms.pop(best_term)
+        self.update_label()
 
     def is_equal(self, rule):
         intersection = len(self.terms.items() & rule.terms.items())
