@@ -5,7 +5,7 @@ from term import Term
 from probability import random_pick
 
 class AntMiner:
-    def __init__(self, data, max_uncovered_cases, ant_count, rules_converg_count, min_cases):
+    def __init__(self, data, max_uncovered_cases, ant_count, rules_converg_count, min_cases, headers):
         self.data = data
         self.max_uncovered_cases = max_uncovered_cases
         self.ant_count = ant_count
@@ -13,6 +13,7 @@ class AntMiner:
         self.min_cases = min_cases
         self.feature_count = self.data.shape[1]
         self.value_counts = data.apply(pd.Series.nunique)
+        self.headers = headers
 
     def get_term_probabilities(self, rule, pheromone):
         denominator = 0
@@ -35,12 +36,12 @@ class AntMiner:
         return probabilities, terms
 
     def build_rule(self, pheromone):
-        rule = Rule(self.data, self.min_cases)
-
+        rule = Rule(self.data, self.min_cases, self.headers)
         probabilities, terms = self.get_term_probabilities(rule, pheromone)
-        while len(terms) > 0:
-            rule.add(random_pick(terms, probabilities))
-            probabilities, terms = self.get_term_probabilities(rule, pheromone)
+
+        #while len(terms) > 0:
+            #rule.add(random_pick(terms, probabilities))
+            #probabilities, terms = self.get_term_probabilities(rule, pheromone)
         
         return rule
 
@@ -52,20 +53,22 @@ class AntMiner:
             t = 0
             j = 0
             pheromone = Pheromone(self.feature_count, self.value_counts)
-            previous_rule = Rule(self.data, self.min_cases)
-            best_rule = Rule(self.data, self.min_cases)
+            previous_rule = Rule(self.data, self.min_cases, self.headers)
+            best_rule = Rule(self.data, self.min_cases, self.headers)
             best_quality = 0
             while t < self.ant_count and j < self.rules_converg_count:
                 rule = self.build_rule(pheromone)
-                rule.prune()
-                pheromone.update(rule)
+               # rule.prune()
+               # pheromone.update(rule)
 
-                if rule.get_quality() > best_quality:
-                    best_rule = rule
-                    best_quality = rule.get_quality()
+               # if rule.get_quality() > best_quality:
+                  #  best_rule = rule
+                   # best_quality = rule.get_quality()
 
-                if rule.is_equal(previous_rule):
-                    j = j + 1
+               # if rule.is_equal(previous_rule):
+                 #   j = j + 1
+                
+                print(rule.terms)
 
                 t = t + 1
 

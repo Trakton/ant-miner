@@ -1,25 +1,28 @@
 class Rule:
-    def __init__(self, data, min_cases):
+    def __init__(self, data, min_cases, headers):
         self.terms = {}
+        self.headers = headers
         self.data = data
         self.min_cases = min_cases
         self.label = None
 
+    def get_query(self):
+        return ' and '.join(['%s == %s' % (self.headers[key], value) for (key, value) in self.terms.items()])
+
     def can_add_term(self, term):
-        return term.feature not in self.terms and self.get_cases_covered_with_term(term).shape[0] >= self.min_cases
+        return term.feature not in self.terms and self.count_cases_covered_with_term(term) >= self.min_cases
 
     def add(self, term):
         self.terms[term.feature] = term.value
 
     def get_cases_covered(self):
-        cases_covered = self.data
-        for key, value in self.terms.items():
-            cases_covered = cases_covered.loc[cases_covered.iloc[:, key] == value]
-        return cases_covered
+        return self.data.query(self.get_query())
 
-    def get_cases_covered_with_term(self, term):
-        cases_covered = self.get_cases_covered()
-        return cases_covered.loc[cases_covered.iloc[:, term.feature] == term.value]
+    def count_cases_covered_with_term(self, term):
+        query = '{} == {}'.format(self.headers[term.feature], term.value)
+        if len(self.terms) > 0:
+            query = ' and '.join([self.get_query(), query])
+        return self.data.query(query)
 
     def update_label(self):
         self.label = self.get_cases_covered().index.value_counts().index[0]
