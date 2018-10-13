@@ -1,13 +1,12 @@
 class Rule:
-    def __init__(self, data, min_cases, headers):
+    def __init__(self, data, min_cases):
         self.terms = {}
-        self.headers = headers
-        self.data = data
+        self.data = data.dataset
         self.min_cases = min_cases
         self.label = None
 
     def get_query(self):
-        return ' and '.join(['%s == %s' % (self.headers[key], value) for (key, value) in self.terms.items()])
+        return ' and '.join(['%s == %s' % (key, value) for (key, value) in self.terms.items()])
 
     def can_add_term(self, term):
         return term.feature not in self.terms and self.count_cases_covered_with_term(term) >= self.min_cases
@@ -19,10 +18,10 @@ class Rule:
         return self.data.query(self.get_query())
 
     def count_cases_covered_with_term(self, term):
-        query = '{} == {}'.format(self.headers[term.feature], term.value)
+        query = '{} == {}'.format(term.feature, term.value)
         if len(self.terms) > 0:
             query = ' and '.join([self.get_query(), query])
-        return self.data.query(query)
+        return self.data.query(query).shape[0]
 
     def update_label(self):
         self.label = self.get_cases_covered().index.value_counts().index[0]
