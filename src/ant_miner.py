@@ -13,28 +13,17 @@ class AntMiner:
         self.min_cases = min_cases
 
     def get_term_probabilities(self, rule, pheromone):
-        denominator = 0
-        for term in self.data.terms:
-            if rule.can_add_term(term):
-                denominator = denominator + pheromone.trail(term)
-
-        probabilities = []
-        terms = []
-        for term in self.data.terms:
-            if rule.can_add_term(term):
-                probability = pheromone.trail(term) / denominator
-                probabilities.append(probability)
-                terms.append(term)
-
-        return probabilities, terms
+        denominator = sum(pheromone.trail(term) for term in self.data.terms if rule.can_add_term(term))
+        probabilities = [(pheromone.trail(term) / denominator, term) for term in self.data.terms if rule.can_add_term(term)]
+        return probabilities
 
     def build_rule(self, pheromone):
         rule = Rule(self.data, self.min_cases)
-        probabilities, terms = self.get_term_probabilities(rule, pheromone)
+        probabilities = self.get_term_probabilities(rule, pheromone)
 
-        while len(terms) > 0:
-            rule.add(random_pick(terms, probabilities))
-            probabilities, terms = self.get_term_probabilities(rule, pheromone)
+        while len(probabilities) > 0:
+            rule.add(random_pick(probabilities))
+            probabilities = self.get_term_probabilities(rule, pheromone)
         
         return rule
 
@@ -69,8 +58,9 @@ class AntMiner:
             discovered_rule_list.append(best_rule)
 
             new_training_set = []
+            label = best_rule.get_label()
             for i in training_set:
-                if (best_rule.label == self.data.dataset.index[i] and best_rule.is_row_covered(self.data.dataset.iloc[i])) == False:
+                if (label == self.data.dataset.index[i] and best_rule.is_row_covered(self.data.dataset.iloc[i])) == False:
                     new_training_set.append(i)
 
             training_set = new_training_set

@@ -3,7 +3,6 @@ class Rule:
         self.terms = {}
         self.data = data.dataset
         self.min_cases = min_cases
-        self.label = None
 
     def get_query(self):
         return ' and '.join(['%s == %s' % (key, value) for (key, value) in self.terms.items()])
@@ -23,8 +22,8 @@ class Rule:
             query = ' and '.join([self.get_query(), query])
         return self.data.query(query).shape[0]
 
-    def update_label(self):
-        self.label = self.get_cases_covered().index.value_counts().index[0]
+    def get_label(self):
+        return self.get_cases_covered().index.value_counts().index[0]
 
     def is_row_covered(self, row):
         for key, value in self.terms.items():
@@ -33,19 +32,19 @@ class Rule:
         return True
 
     def get_quality(self):
-        self.update_label()
         tp = 0
         fp = 0
         tn = 0
         fn = 0
+        label = self.get_label()
         for index, row in self.data.iterrows():
             if(self.is_row_covered(row)):
-                if index == self.label:
+                if index == label:
                     tp = tp + 1
                 else:
                     fp = fp + 1
             else:
-                if index == self.label:
+                if index == label:
                     fn = fn + 1
                 else:
                     tn = tn + 1
@@ -62,12 +61,9 @@ class Rule:
                     best_q = q
                     best_term = key
                 self.terms[key] = value
-
             if(best_term == None):
                 break
-            
             self.terms.pop(best_term)
-        self.update_label()
 
     def is_equal(self, rule):
         intersection = len(self.terms.items() & rule.terms.items())

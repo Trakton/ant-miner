@@ -14,6 +14,6 @@ class Pheromone:
 
     def update(self, rule):
         q = rule.get_quality()
-        for key, value in  rule.terms.items():
+        for key, value in rule.terms.items():
             self.paths[key][value] += self.paths[key][value] * q
         self.normalize()

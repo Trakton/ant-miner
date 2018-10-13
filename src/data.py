@@ -17,7 +17,6 @@ class Data:
         for i in range(len(self.features)):
             self.feature_options[self.features[i]] = value_counts[i]
 
-
     def __init__(self, dataset):
         self.dataset = self.encode(dataset)
         self.features = list(self.dataset)
